@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Simulated server API
     const SERVER_URL = "https://jsonplaceholder.typicode.com/posts";
 
-    // Fetch initial data from the mock server
+    // Fetch quotes from the server
     async function fetchQuotesFromServer() {
         try {
             const response = await fetch(SERVER_URL);
@@ -19,15 +19,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 category: "General"
             }));
 
-            // Conflict resolution: server takes precedence if new data is available
-            if (serverQuotes.length > quotes.length) {
-                quotes = serverQuotes;
-                localStorage.setItem("quotes", JSON.stringify(quotes));
-            }
-            renderQuotes();
+            // Conflict resolution: merge local and server quotes
+            syncQuotes(serverQuotes);
         } catch (error) {
             console.error("Error fetching server data:", error);
         }
+    }
+
+    // Sync local and server data (ensures consistency)
+    function syncQuotes(serverQuotes) {
+        const localQuotes = JSON.parse(localStorage.getItem("quotes")) || [];
+        
+        // Merge local and server quotes, avoiding duplicates
+        const mergedQuotes = [...new Map([...serverQuotes, ...localQuotes].map(q => [q.text, q])).values()];
+        
+        quotes = mergedQuotes;
+        localStorage.setItem("quotes", JSON.stringify(quotes));
+        renderQuotes();
     }
 
     // Send new quotes to server
