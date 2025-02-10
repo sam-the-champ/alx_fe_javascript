@@ -36,6 +36,9 @@ document.addEventListener("DOMContentLoaded", () => {
         quotes = mergedQuotes;
         localStorage.setItem("quotes", JSON.stringify(quotes));
         renderQuotes();
+
+        // ✅ Alert when sync is complete
+        alert("Quotes synced with server!");
     }
 
     // Send new quotes to server
@@ -52,6 +55,9 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!response.ok) {
                 throw new Error("Failed to sync with server");
             }
+
+            // ✅ Alert when a new quote is successfully synced
+            alert("New quote synced with server!");
         } catch (error) {
             console.error("Sync Error:", error);
         }
