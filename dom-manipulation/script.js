@@ -19,14 +19,33 @@ document.addEventListener("DOMContentLoaded", () => {
                 category: "General"
             }));
 
-            // Syncing logic: server takes precedence if discrepancies exist
-            if (quotes.length === 0 || serverQuotes.length > quotes.length) {
+            // Conflict resolution: server takes precedence if new data is available
+            if (serverQuotes.length > quotes.length) {
                 quotes = serverQuotes;
                 localStorage.setItem("quotes", JSON.stringify(quotes));
             }
             renderQuotes();
         } catch (error) {
             console.error("Error fetching server data:", error);
+        }
+    }
+
+    // Send new quotes to server
+    async function syncQuoteWithServer(quote) {
+        try {
+            const response = await fetch(SERVER_URL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(quote)
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to sync with server");
+            }
+        } catch (error) {
+            console.error("Sync Error:", error);
         }
     }
 
@@ -62,6 +81,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const newQuote = { text, category };
         quotes.push(newQuote);
         localStorage.setItem("quotes", JSON.stringify(quotes));
+
+        // Sync with the server
+        syncQuoteWithServer(newQuote);
+
         populateCategories();
         renderQuotes();
     }
